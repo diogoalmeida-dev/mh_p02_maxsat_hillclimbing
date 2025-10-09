@@ -12,7 +12,7 @@ def read_cnf():
     num_clauses = 0
     num_vars = 0
 
-    with open("../cnf_files/uf100-01.cnf", "r") as f:
+    with open("../cnf_files/uf20-01.cnf", "r") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("c"):
@@ -89,22 +89,23 @@ def hillclimbing():
 
     start_time = time.process_time()
 
-    ##while True:
-    ## if fitness == num_clauses: ## early optimal stop
-        ## break
-
-    neighbours = generate_neighbours(tmp_solution)
-    better_found = False
-
-    for neighbour in neighbours:
-        nb_fitness = evaluate_fitness(clauses, neighbour)
-        evaluations += 1
-
-        if nb_fitness > fitness:
-            fitness = nb_fitness
-            tmp_solution = neighbour
-            better_found = True
+    while True:
+        if fitness == num_clauses: ## early optimal stop
             break
+
+        neighbours = generate_neighbours(tmp_solution)
+        better_found = False
+
+        for neighbour in neighbours:
+            nb_fitness = evaluate_fitness(clauses, neighbour)
+            evaluations += 1
+
+            if nb_fitness > fitness:
+                fitness = nb_fitness
+                tmp_solution = neighbour
+                better_found = True
+                break
+
         if not better_found:
             break
 
