@@ -1,10 +1,6 @@
-## function to read the CNF from a DIMACS file
-import itertools
-import random
-import time
+#utils.py
 
-# iterations of the algorithm
-num_runs = 30
+import random
 
 # functions that reads the cnf file and stores variables and lists of its content
 def read_cnf():
@@ -43,9 +39,7 @@ def read_cnf():
 
 ## function to find all combinations of true/false assignments for variables
 def random_combination(num_vars):
-    combinations = list(itertools.product([1, 0], repeat=num_vars))
-
-    return random.choice(combinations) ## get a random combination of true and false assignments to the variables
+    return [random.choice([0, 1]) for _ in range(num_vars)]
 
 # Function to find the fitness being the fitness the number of clauses satisfied by the combination
 def evaluate_fitness(clauses, combination):
@@ -75,52 +69,3 @@ def generate_neighbours(combination):
         neighbours.append(tmp_combination)
 
     return neighbours
-
-## implements next ascent hillclimbing using 1 bit hamming distance neighbourhood
-def hillclimbing():
-    clauses, num_clauses, num_vars = read_cnf() ## coletar o conteúdo do ficheiro
-
-    initial_solution = random_combination(num_vars) ## começar por uma solução random
-    fitness = evaluate_fitness(clauses, initial_solution) ## descobrir o fitness
-
-    tmp_solution = initial_solution
-
-    evaluations = 1 ## contagem da primeira avaliacao
-
-    start_time = time.process_time()
-
-    while True:
-        if fitness == num_clauses: ## early optimal stop
-            break
-
-        neighbours = generate_neighbours(tmp_solution)
-        better_found = False
-
-        for neighbour in neighbours:
-            nb_fitness = evaluate_fitness(clauses, neighbour)
-            evaluations += 1
-
-            if nb_fitness > fitness:
-                fitness = nb_fitness
-                tmp_solution = neighbour
-                better_found = True
-                break
-
-        if not better_found:
-            break
-
-    cpu_time = time.process_time() - start_time
-    return tmp_solution, fitness, evaluations, cpu_time
-
-def main():
-    for x in range(num_runs):
-        solution, fitness, evals, cpu = hillclimbing()
-
-        if x < 9:
-            print(f"Run 0{x + 1}: Best fitness = {fitness}, Evaluations = {evals}, CPU time = {cpu:.4f} s")
-            continue
-        print(f"Run {x + 1}: Best fitness = {fitness}, Evaluations = {evals}, CPU time = {cpu:.4f} s")
-
-
-if __name__ == "__main__":
-    main()
