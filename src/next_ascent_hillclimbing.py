@@ -1,14 +1,10 @@
-import random
-import time
-
-from utils import read_cnf, random_combination, evaluate_fitness, generate_neighbours
-
 from multistart_next_ascent_hillclimbing import *
+from variable_neighbourhood_ascent import *
 
 # iterations of the algorithm
 num_runs = 30
 
-## implements next ascent hillclimbing using 1 bit hamming distance neighbourhood
+# implements next ascent hillclimbing using 1 bit hamming distance neighbourhood
 # next ascent visits neighbourhood randomly and moves to the first neighbour that improves fitness
 def next_ascent_hillclimbing():
     clauses, num_clauses, num_vars = read_cnf() ## collect file content
@@ -48,15 +44,15 @@ def next_ascent_hillclimbing():
 
 def main():
     for x in range(num_runs):
-        solutions, cpu = multistart_next_ascent_hillclimbing()
+        ## variable neighbourhood
+        solution, fitness, evaluations, cpu = variable_next_ascent_hillclimbing()
+        print(solution, fitness, evaluations, cpu)
 
-        print(solutions)
+        print("above is variable next ascent hillclimbing, below is mnah")
 
-        if x < 9:
-            print(f"Run 0{x + 1}, Fitness = {solutions[0]} Evaluations = {solutions[1]}, CPU time = {cpu:.4f} s")
-            continue
-        print(f"Run {x + 1}, Fitness = {solutions[0]} Evaluations = {solutions[1]}, CPU time = {cpu:.4f} s")
-
+    for x in range(num_runs):
+        solution, evaluations, cpu_time = multistart_next_ascent_hillclimbing()
+        print(solution)
 
 if __name__ == "__main__":
     main()

@@ -7,44 +7,53 @@ from utils import read_cnf, random_combination, evaluate_fitness, generate_neigh
 
 ## implements multistart next ascent hillclimbing using 1 bit hamming distance neighbourhood
 def multistart_next_ascent_hillclimbing():
-    clauses, num_clauses, num_vars = read_cnf()  ## collect file content
+    clauses, num_clauses, num_vars = read_cnf()
 
-    solutions =[]
-
-    evaluations = 0 ## contagem da primeira avaliacao
-
-    start_time = time.process_time()  # start cpu clock
+    best_solution = None   # store the best found
+    best_fitness = -1      # initialize to something smaller than possible
+    evaluations = 0
+    start_time = time.process_time()
 
     while evaluations < max_evaluations:
-        initial_solution = random_combination(num_vars)  ## start with a random solution
-        fitness = evaluate_fitness(clauses, initial_solution)  ## discover initial solution fitness
+        current_solution = random_combination(num_vars)
+        fitness = evaluate_fitness(clauses, current_solution)
         evaluations += 1
-        tmp_solution = initial_solution
 
-        if fitness == num_clauses:  ## if the solution is a global optimum, break and return the solution
-            solutions.append(tmp_solution)
-            cpu_time = time.process_time() - start_time
-            return solutions, evaluations, cpu_time
-
-        neighbours = generate_neighbours(tmp_solution)  # generate the neighbourhood by flipping one bit in each solution
-        random.shuffle(neighbours)  # since its next ascent, randomize search space
-        better_found = False  # trigger to find local optimum
-
-        for neighbour in neighbours:  # for each neighbour
-            nb_fitness = evaluate_fitness(clauses, neighbour)  # discover its fitness (how many clauses are satisfied)
-            evaluations += 1  # for each neighbour accessed, evaluation goes up
-
-            if nb_fitness > fitness:  ## if neighbour fitness is better than the current solution, switch to the neighbour
-                fitness = nb_fitness
-                tmp_solution = neighbour
-                better_found = True
+        while True:
+            if evaluations >= max_evaluations:
                 break
 
-        if not better_found:
-            solution = tmp_solution
-            tuple = (solution, fitness, evaluations)
-            solutions.append(tuple)
-            break
+            if fitness == num_clauses:  # global optimum found
+                best_solution = (current_solution, fitness, evaluations)
+                cpu_time = time.process_time() - start_time
+                return best_solution, evaluations, cpu_time
 
-    cpu_time = time.process_time() - start_time  # end cpu clock
-    return solutions, cpu_time
+            indexes = list(range(num_vars))
+            random.shuffle(indexes)  # shuffle indices once
+            better_found = False
+
+            for i in indexes:
+                if evaluations >= max_evaluations:
+                    break
+
+                # flip bit in-place
+                current_solution[i] = 1 - current_solution[i]
+                nb_fitness = evaluate_fitness(clauses, current_solution)
+                evaluations += 1
+
+                if nb_fitness > fitness:
+                    fitness = nb_fitness
+                    better_found = True
+                    break
+                else:
+                    current_solution[i] = 1 - current_solution[i]  # undo flip
+
+            if not better_found:
+                break  # local optimum
+
+        if fitness > best_fitness:         # update global best if current local optimum is better
+            best_solution = (current_solution, fitness, evaluations)
+            best_fitness = fitness
+
+    cpu_time = time.process_time() - start_time
+    return best_solution, evaluations, cpu_time
