@@ -2,13 +2,18 @@
 
 import random
 
+# Default CNF file path (can be overridden)
+CNF_FILE_PATH = "../cnf_files/uf20-01.cnf"
+
 # functions that reads the cnf file and stores variables and lists of its content
-def read_cnf():
+def read_cnf(filepath=None):
+    if filepath is None:
+        filepath = CNF_FILE_PATH
     clauses = []
     num_clauses = 0
     num_vars = 0
 
-    with open("../cnf_files/uf250-01.cnf", "r") as f:
+    with open(filepath, "r") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("c"):

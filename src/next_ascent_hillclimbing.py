@@ -1,11 +1,26 @@
+"""
+Next-Ascent Hillclimbing Algorithm (1-bit Hamming Distance)
+
+This algorithm attempts to solve a CNF SAT problem using stochastic local search.
+It implements the **Next-Ascent Hillclimbing** strategy:
+
+1. Starts from a random initial solution (0/1 assignments for each CNF variable).
+2. Explores the neighborhood at Hamming distance 1 (flipping one bit at a time).
+3. Moves immediately to the first neighbor that improves the fitness
+   (number of satisfied clauses).
+4. Repeats until no improving neighbor is found (local optimum)
+   or the global optimum (all clauses satisfied) is reached.
+
+Key Points:
+- Fitness is the number of clauses satisfied by the current assignment.
+- Evaluations count the number of fitness computations performed.
+- Neighbors are visited in random order to introduce stochasticity.
+"""
+
 from multistart_next_ascent_hillclimbing import *
+from multistart_variable_neighbourhood_ascent import *
 from variable_neighbourhood_ascent import *
 
-# iterations of the algorithm
-num_runs = 30
-
-# implements next ascent hillclimbing using 1 bit hamming distance neighbourhood
-# next ascent visits neighbourhood randomly and moves to the first neighbour that improves fitness
 def next_ascent_hillclimbing():
     clauses, num_clauses, num_vars = read_cnf() ## collect file content
 
@@ -14,7 +29,7 @@ def next_ascent_hillclimbing():
 
     tmp_solution = initial_solution
 
-    evaluations = 1 ## contagem da primeira avaliacao
+    evaluations = 1
 
     start_time = time.process_time() # start cpu clock
 
@@ -41,18 +56,3 @@ def next_ascent_hillclimbing():
 
     cpu_time = time.process_time() - start_time # end cpu clock
     return tmp_solution, fitness, evaluations, cpu_time
-
-def main():
-    for x in range(num_runs):
-        ## variable neighbourhood
-        solution, fitness, evaluations, cpu = variable_next_ascent_hillclimbing()
-        print(solution, fitness, evaluations, cpu)
-
-        print("above is variable next ascent hillclimbing, below is mnah")
-
-    for x in range(num_runs):
-        solution, evaluations, cpu_time = multistart_next_ascent_hillclimbing()
-        print(solution)
-
-if __name__ == "__main__":
-    main()

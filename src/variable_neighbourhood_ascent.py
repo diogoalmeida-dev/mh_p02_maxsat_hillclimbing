@@ -1,28 +1,44 @@
-#variable_neighbourhood_ascent.py
-# this code implements the variable neighbourhood ascent using up to 3-bit hamming distance
-# it performs 30 independent runs for each problem instance uf20, uf100, uf250
-# basically next ascent but when we don't find a better neighbour we up the neighbourhood by one bit
+"""
+Variable Neighbourhood Hillclimbing (VNH) Algorithm
+
+This algorithm attempts to solve a CNF SAT problem using a local search strategy
+with **variable neighbourhoods**:
+
+1. Starts from a random initial solution (0/1 assignments for each CNF variable).
+2. Explores the neighborhood of the current solution by flipping `k` bits simultaneously,
+   where k starts at 1 and can increase up to a maximum (here k=3).
+3. If an improving neighbor is found, moves immediately to it and resets k to 1.
+4. If no improvement is found, increases k to explore a wider neighborhood.
+5. Stops when a global optimum is found (all clauses satisfied) or all neighborhoods
+   have been explored without improvement (local optimum).
+
+Key Points:
+- Fitness is the number of satisfied clauses in the CNF formula.
+- Evaluations count the number of fitness computations performed.
+- Uses combinatorial generation of neighbors at Hamming distance k.
+- Combines a greedy hillclimbing approach with a variable neighborhood strategy
+  to escape small local optima.
+"""
+
 import itertools
-import random
 import time
 
-from sqlalchemy import false
+from src.utils import random_combination, evaluate_fitness, read_cnf
 
-from src.utils import random_combination, evaluate_fitness, read_cnf, generate_neighbours
-
-# implements next ascent hillclimbing using 1 bit hamming distance neighbourhood
+# implements variable next ascent hillclimbing using 1 bit hamming distance neighbourhood
 # next ascent visits neighbourhood randomly and moves to the first neighbour that improves fitness
-def variable_next_ascent_hillclimbing():
+# enlargers neighbourhood up to k = 3 bits
+def variable_neighbourhood_hillclimbing():
     clauses, num_clauses, num_vars = read_cnf() ## collect file content
+
+    start_time = time.process_time() # start cpu clock
 
     initial_solution = random_combination(num_vars) ## start with a random solution
     fitness = evaluate_fitness(clauses, initial_solution) ## discover current solution fitness
 
     current_solution = initial_solution
 
-    evaluations = 1 ## contagem da primeira avaliacao
-
-    start_time = time.process_time() # start cpu clock
+    evaluations = 1
 
     k = 1
 
@@ -31,12 +47,12 @@ def variable_next_ascent_hillclimbing():
             break
 
         better_found = False
-        indexes = list(range(num_vars))
+        indexes = list(range(num_vars)) ## gives the list of indexes
 
-        for bits_to_flip in itertools.combinations(indexes, k): # generate neighbours at Hamming distance k
-            neighbour = current_solution.copy()
-            for index in bits_to_flip:
-                neighbour[index] = 1 - neighbour[index]
+        for bits_to_flip in itertools.combinations(indexes, k): # generate neighbours at hamming distance k
+            neighbour = current_solution.copy() ## to avoid modifying current solution
+            for index in bits_to_flip: ## index is the value in the bits_to_flip
+                neighbour[index] = 1 - neighbour[index] ## flip the bit
 
             nb_fitness = evaluate_fitness(clauses, neighbour)
             evaluations += 1
